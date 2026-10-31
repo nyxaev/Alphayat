@@ -1,0 +1,13 @@
+{
+  "name": "feedback-apresentacao-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Proxy mínimo que injeta o prompt de sistema e chama o modelo multimodal",
+  "main": "servidor.js",
+  "scripts": {
+    "start": "node servidor.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
