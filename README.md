@@ -1,85 +1,103 @@
-<div align="center">
+ <div align="center">
 
-# 🧠 Alphayat — Sistema de Análise de Imagens e Apresentações
-### Desenvolvido pelo **Grupo Percepta** 🚀
+# Alphayat: Image & Presentation Analysis System
+### Built with purpose.
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Status-Pronto%20para%20Testes-success?style=for-the-badge&logo=appveyor">
-  <img src="https://img.shields.io/badge/Grupo-Percepta-blueviolet?style=for-the-badge&logo=google-colab">
-  <img src="https://img.shields.io/badge/Demo%20Day-Preparado-orange?style=for-the-badge&logo=rocket">
+  <img src="https://img.shields.io/badge/Status-Ready%20for%20Testing-success?style=for-the-badge">
+  <img src="https://img.shields.io/badge/Team-Percepta-blueviolet?style=for-the-badge">
+  <img src="https://img.shields.io/badge/Demo%20Day-Ready-orange?style=for-the-badge">
 </p>
 
 <p align="center">
-  <b>Transformando a comunicação e a presença pessoal através de Inteligência Artificial Multimodal e Visão Computacional.</b>
+  <b>Transforming communication and personal presence through Multimodal Artificial Intelligence and Computer Vision.</b>
 </p>
 
 ---
 
-### ⚡ Tecnologias & Stack
+### Technologies & Stack
+
 <p align="center">
-  <img src="https://img.shields.io/badge/Kotlin-0095D5?style=for-the-badge&logo=kotlin&logoColor=white">
-  <img src="https://img.shields.io/badge/Jetpack%20Compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white">
-  <img src="https://img.shields.io/badge/CameraX-34A853?style=for-the-badge&logo=android&logoColor=white">
-  <img src="https://img.shields.io/badge/ML%20Kit-EA4335?style=for-the-badge&logo=google&logoColor=white">
-  <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white">
-  <img src="https://img.shields.io/badge/Anthropic%20Claude-D4A574?style=for-the-badge&logo=anthropic&logoColor=white">
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/kotlin/kotlin-original.svg" width="45" alt="Kotlin">
+  &nbsp;&nbsp;
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/android/android-original.svg" width="45" alt="Android">
+  &nbsp;&nbsp;
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-original.svg" width="45" alt="Node.js">
+  &nbsp;&nbsp;
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/google/google-original.svg" width="45" alt="Google">
+</p>
+
+<p align="center">
+  <b>Kotlin · Jetpack Compose · CameraX · Google ML Kit · Node.js · Anthropic Claude</b>
 </p>
 
 </div>
 
 ---
 
-## 📌 Sobre o Projeto
+## About the Project
 
-O **Alphayat** é um assistente inteligente de feedback para apresentações pessoais e profissionais. Utilizando a câmera do dispositivo em conjunto com algoritmos de Machine Learning no *edge* (dispositivo) e modelos multimodais na nuvem, o aplicativo analisa instantaneamente três pilares fundamentais da comunicação:
+**Alphayat** is an intelligent feedback assistant designed to help users improve their personal and professional presentations.
 
-1. **🧍 Postura & Pose:** Detecção de alinhamento de ombros, inclinação corporal e linguagem corporal (via Google MLKit Pose Detection).
-2. **👔 Roupa & Apresentação:** Avaliação de adequação visual e contraste de vestimenta.
-3. **🎙️ Tom de Voz:** Análise de ritmo, volume, pausas e variação de tom capturados pelo microfone em tempo real.
+By combining device camera capabilities, on-device Machine Learning algorithms, and cloud-based multimodal AI models, the application analyzes three fundamental aspects of communication:
+
+1. **Posture & Body Language:** Detects shoulder alignment, body inclination, and posture patterns using Google ML Kit Pose Detection.
+2. **Outfit & Appearance:** Evaluates visual presentation, clothing suitability, and outfit contrast.
+3. **Voice & Delivery:** Analyzes speaking pace, volume, pauses, and pitch variations captured through the microphone in real time.
 
 ---
 
-## 🛠️ Arquitetura do Sistema
+## System Architecture
 
 ```mermaid
 graph TD
-    A[App Android - Jetpack Compose] -->|Captura de Quadro & Áudio| B[CameraX & MLKit]
-    B -->|Métricas Locais + Imagem JPEG| C[Cliente HTTP OkHttp]
-    C -->|Requisição POST /analisar| D[Servidor Node.js Backend]
-    D -->|Modo IA ou Modo Demo| E[API Anthropic Claude / Mock Engine]
-    E -->|JSON Validado| D
-    D -->|Feedback Estruturado| A
+    A[Android App - Jetpack Compose] -->|Frame & Audio Capture| B[CameraX & ML Kit]
+    B -->|Local Metrics + JPEG Image| C[OkHttp HTTP Client]
+    C -->|POST /analisar Request| D[Node.js Backend Server]
+    D -->|AI Mode or Demo Mode| E[Anthropic Claude API / Mock Engine]
+    E -->|Validated JSON| D
+    D -->|Structured Feedback| A
 ```
 
 ---
 
-## 🚀 Como Executar a Demonstração
+## Running the Demo
 
-### 1️⃣ Iniciar o Backend (Servidor de Análise)
-O backend possui suporte a **Modo Demonstrativo (Demo Mode)** integrado: funciona perfeitamente para testes sem exigir chaves de API externas.
+### 1. Start the Backend (Analysis Server)
+
+The backend includes an integrated **Demo Mode**, allowing the application to run and be tested without requiring external API credentials.
 
 ```bash
 cd backend
-# Opcional: defina sua chave se quiser usar o Claude real
-# set ANTHROPIC_API_KEY=sua_chave_aqui
+
+# Optional: configure your API key to enable real Claude analysis
+# set ANTHROPIC_API_KEY=your_api_key_here
+
 node --experimental-fetch servidor.js
 ```
-> O servidor iniciará em `http://localhost:8787/analisar`.
 
-### 2️⃣ Executar o Aplicativo Android
-1. Abra o projeto no **Android Studio**.
-2. Conecte um celular físico via USB ou inicie um AVD (Emulador).
-3. Clique em **Run ▶️** (`Shift + F10`) para compilar e instalar o app (`app-debug.apk`).
+> The server will be available at `http://localhost:8787/analisar`.
+
+### 2. Run the Android Application
+
+1. Open the project in **Android Studio**.
+2. Connect a physical Android device via USB or launch an AVD (Android Virtual Device).
+3. Click **Run** (`Shift + F10`) to build and install the application (`app-debug.apk`).
 
 ---
 
-## 🛡️ Privacidade e Segurança
-- O **Alphayat** respeita rigorosamente a privacidade do usuário:
-- O áudio bruto **nunca** deixa o aparelho (apenas métricas matemáticas calculadas localmente são enviadas).
-- Nenhuma imagem ou gravação é armazenada permanentemente no servidor ou no dispositivo.
+## Privacy & Security
+
+Alphayat prioritizes user privacy and data protection:
+
+- **Audio never leaves the device:** Raw audio is processed locally. Only mathematically derived metrics are transmitted to the backend.
+- **No permanent storage:** Images and audio recordings are not permanently stored on the device or server.
+- **Local processing:** Sensitive audio analysis is performed directly on the device before any data transmission.
 
 ---
 
 <div align="center">
-  <b>Grupo Percepta • Rumo ao Demo Day 🚀</b>
+
+**Percepta Team | On the Road to Demo Day**
+
 </div>

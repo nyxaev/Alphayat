@@ -25,12 +25,15 @@ class ParserRespostaAnalise {
             val escopo = dentroDoEscopo.booleanOrNull ?: return ResultadoAnalise.Recusado
             if (!escopo) return ResultadoAnalise.Recusado
 
+            val isDemo = (raiz.get("modo_demonstracao") as? JsonPrimitive)?.booleanOrNull ?: false
+
             ResultadoAnalise.Sucesso(
                 pose = campoTexto(raiz, "pose"),
                 roupa = campoTexto(raiz, "roupa"),
-                voz = campoTexto(raiz, "voz")
+                voz = campoTexto(raiz, "voz"),
+                modoDemonstracao = isDemo
             )
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             ResultadoAnalise.Recusado
         }
     }

@@ -13,20 +13,28 @@ object CodificadorImagem {
     private const val QUALIDADE_JPEG = 80
 
     fun paraBase64(imagem: ImageProxy): String {
+        var originalBitmap: Bitmap? = null
+        var redimensionadaBitmap: Bitmap? = null
         try {
-            val original = imagem.toBitmap()
-            val escala = min(1f, LADO_MAXIMO / maxOf(original.width, original.height).toFloat())
+            originalBitmap = imagem.toBitmap()
+            val escala = min(1f, LADO_MAXIMO / maxOf(originalBitmap.width, originalBitmap.height).toFloat())
             val matriz = Matrix().apply {
                 postRotate(imagem.imageInfo.rotationDegrees.toFloat())
                 postScale(escala, escala)
             }
-            val redimensionada = Bitmap.createBitmap(
-                original, 0, 0, original.width, original.height, matriz, true
+            redimensionadaBitmap = Bitmap.createBitmap(
+                originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matriz, true
             )
             val saida = ByteArrayOutputStream()
-            redimensionada.compress(Bitmap.CompressFormat.JPEG, QUALIDADE_JPEG, saida)
+            redimensionadaBitmap.compress(Bitmap.CompressFormat.JPEG, QUALIDADE_JPEG, saida)
             return Base64.encodeToString(saida.toByteArray(), Base64.NO_WRAP)
         } finally {
+            if (redimensionadaBitmap != null && redimensionadaBitmap != originalBitmap && !redimensionadaBitmap.isRecycled) {
+                redimensionadaBitmap.recycle()
+            }
+            if (originalBitmap != null && !originalBitmap.isRecycled) {
+                originalBitmap.recycle()
+            }
             imagem.close()
         }
     }

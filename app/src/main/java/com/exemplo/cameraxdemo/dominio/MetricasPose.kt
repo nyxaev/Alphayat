@@ -30,47 +30,65 @@ data class MetricasPose(
 object CalculadoraPose {
 
     private const val CONFIANCA_MINIMA = 0.5f
-    private const val LARGURA_OMBROS_MINIMA = 1f
-    private const val DISTANCIA_CRUZAMENTO = 0.6f
+    private const val LARGURA_OMBROS_MINIMA_PX = 20f
+    private const val DISTANCIA_CRUZAMENTO_RAZAO = 0.65f
 
     fun calcular(pontos: Map<TipoPonto, PontoCorpo>): MetricasPose? {
-        if (TipoPonto.entries.any { (pontos[it]?.confianca ?: 0f) < CONFIANCA_MINIMA }) return null
+        val ombroE = pontos[TipoPonto.OMBRO_ESQUERDO]
+        val ombroD = pontos[TipoPonto.OMBRO_DIREITO]
 
-        val orelhaE = pontos.getValue(TipoPonto.ORELHA_ESQUERDA)
-        val orelhaD = pontos.getValue(TipoPonto.ORELHA_DIREITA)
-        val ombroE = pontos.getValue(TipoPonto.OMBRO_ESQUERDO)
-        val ombroD = pontos.getValue(TipoPonto.OMBRO_DIREITO)
-        val cotoveloE = pontos.getValue(TipoPonto.COTOVELO_ESQUERDO)
-        val cotoveloD = pontos.getValue(TipoPonto.COTOVELO_DIREITO)
-        val pulsoE = pontos.getValue(TipoPonto.PULSO_ESQUERDO)
-        val pulsoD = pontos.getValue(TipoPonto.PULSO_DIREITO)
+        if (ombroE == null || ombroD == null) return null
+        if (ombroE.confianca < CONFIANCA_MINIMA || ombroD.confianca < CONFIANCA_MINIMA) return null
 
-        val larguraOmbros = hypot(ombroD.x - ombroE.x, ombroD.y - ombroE.y)
-        if (larguraOmbros < LARGURA_OMBROS_MINIMA) return null
+        val dxOmbros = ombroD.x - ombroE.x
+        val dyOmbros = ombroD.y - ombroE.y
+        val larguraOmbros = hypot(dxOmbros, dyOmbros)
 
-        val inclinacao = normalizarAngulo(
-            Math.toDegrees(atan2((ombroD.y - ombroE.y).toDouble(), (ombroD.x - ombroE.x).toDouble())).toFloat()
-        )
+        if (larguraOmbros < LARGURA_OMBROS_MINIMA_PX) return null
 
-        val centroOmbrosX = (ombroE.x + ombroD.x) / 2f
-        val centroOrelhasX = (orelhaE.x + orelhaD.x) / 2f
-        val deslocamento = abs(centroOrelhasX - centroOmbrosX) / larguraOmbros
+        val inclinacaoBruta = Math.toDegrees(atan2(dyOmbros.toDouble(), dxOmbros.toDouble())).toFloat()
+        val inclinacaoOmbros = normalizarAngulo(inclinacaoBruta)
 
-        val pulsosAbaixoDosOmbros = pulsoE.y >= ombroE.y && pulsoD.y >= ombroD.y
-        val pulsoEsqueVaiAoCotoveloDireito = hypot(pulsoE.x - cotoveloD.x, pulsoE.y - cotoveloD.y) < larguraOmbros * DISTANCIA_CRUZAMENTO
-        val pulsoDirVaiAoCotoveloEsquerdo = hypot(pulsoD.x - cotoveloE.x, pulsoD.y - cotoveloE.y) < larguraOmbros * DISTANCIA_CRUZAMENTO
+        val orelhaE = pontos[TipoPonto.ORELHA_ESQUERDA]
+        val orelhaD = pontos[TipoPonto.ORELHA_DIREITA]
+        val deslocamentoCabeca = if (orelhaE != null && orelhaD != null &&
+            orelhaE.confianca >= CONFIANCA_MINIMA && orelhaD.confianca >= CONFIANCA_MINIMA) {
+            val centroOmbrosX = (ombroE.x + ombroD.x) / 2f
+            val centroOrelhasX = (orelhaE.x + orelhaD.x) / 2f
+            abs(centroOrelhasX - centroOmbrosX) / larguraOmbros
+        } else {
+            0f
+        }
+
+        val cotoveloE = pontos[TipoPonto.COTOVELO_ESQUERDO]
+        val cotoveloD = pontos[TipoPonto.COTOVELO_DIREITO]
+        val pulsoE = pontos[TipoPonto.PULSO_ESQUERDO]
+        val pulsoD = pontos[TipoPonto.PULSO_DIREITO]
+
+        val bracosCruzados = if (cotoveloE != null && cotoveloD != null && pulsoE != null && pulsoD != null &&
+            cotoveloE.confianca >= CONFIANCA_MINIMA && cotoveloD.confianca >= CONFIANCA_MINIMA &&
+            pulsoE.confianca >= CONFIANCA_MINIMA && pulsoD.confianca >= CONFIANCA_MINIMA) {
+            val pulsosAbaixoOmbros = pulsoE.y >= ombroE.y - (larguraOmbros * 0.2f) &&
+                                     pulsoD.y >= ombroD.y - (larguraOmbros * 0.2f)
+            val distE = hypot(pulsoE.x - cotoveloD.x, pulsoE.y - cotoveloD.y)
+            val distD = hypot(pulsoD.x - cotoveloE.x, pulsoD.y - cotoveloE.y)
+            pulsosAbaixoOmbros && distE < larguraOmbros * DISTANCIA_CRUZAMENTO_RAZAO &&
+                                  distD < larguraOmbros * DISTANCIA_CRUZAMENTO_RAZAO
+        } else {
+            false
+        }
 
         return MetricasPose(
-            inclinacaoOmbrosGraus = inclinacao,
-            deslocamentoCabecaRazao = deslocamento,
-            bracosCruzados = pulsosAbaixoDosOmbros && pulsoEsqueVaiAoCotoveloDireito && pulsoDirVaiAoCotoveloEsquerdo
+            inclinacaoOmbrosGraus = inclinacaoOmbros,
+            deslocamentoCabecaRazao = deslocamentoCabeca,
+            bracosCruzados = bracosCruzados
         )
     }
 
     private fun normalizarAngulo(graus: Float): Float {
         var resultado = graus
-        if (resultado > 90f) resultado -= 180f
-        if (resultado < -90f) resultado += 180f
+        while (resultado > 90f) resultado -= 180f
+        while (resultado < -90f) resultado += 180f
         return resultado
     }
 }

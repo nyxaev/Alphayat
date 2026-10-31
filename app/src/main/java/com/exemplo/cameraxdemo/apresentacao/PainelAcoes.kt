@@ -19,8 +19,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.exemplo.cameraxdemo.dominio.ModoAnalise
 
 @Composable
@@ -34,7 +36,7 @@ fun PainelAcoes(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(Color.Black.copy(alpha = 0.7f))
+            .background(Color.Black.copy(alpha = 0.75f))
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -101,6 +103,14 @@ private fun AreaResultado(analise: EstadoAnalise) {
                 TextoResultado(analise.mensagem)
             }
             is EstadoAnalise.Sucesso -> {
+                if (analise.modoDemonstracao) {
+                    Text(
+                        text = "ℹ️ Modo Demonstrativo (Análise Local)",
+                        color = Color(0xFFFFD700),
+                        fontSize = 12.sp,
+                        fontStyle = FontStyle.Italic
+                    )
+                }
                 if (analise.pose == null && analise.roupa == null && analise.voz == null) {
                     TextoResultado("Nada a comentar para esta análise.")
                 }

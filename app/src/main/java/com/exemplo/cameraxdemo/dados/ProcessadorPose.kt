@@ -13,6 +13,8 @@ import com.google.mlkit.vision.pose.PoseDetection
 import com.google.mlkit.vision.pose.PoseDetector
 import com.google.mlkit.vision.pose.defaults.PoseDetectorOptions
 import com.google.mlkit.vision.pose.PoseLandmark
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 class ProcessadorPose : AutoCloseable {
 
@@ -22,14 +24,29 @@ class ProcessadorPose : AutoCloseable {
             .build()
     )
 
+    private val processando = AtomicBoolean(false)
+    @Volatile private var ultimaMetrica: MetricasPose? = null
+
     @OptIn(ExperimentalGetImage::class)
     fun processar(imagem: ImageProxy): MetricasPose? {
-        val midia = imagem.image ?: return null
-        return runCatching {
+        val midia = imagem.image ?: return ultimaMetrica
+
+        if (!processando.compareAndSet(false, true)) {
+            return ultimaMetrica
+        }
+
+        try {
             val entrada = InputImage.fromMediaImage(midia, imagem.imageInfo.rotationDegrees)
-            val pose = Tasks.await(detector.process(entrada))
-            CalculadoraPose.calcular(mapear(pose))
-        }.getOrNull()
+            val tarefa = detector.process(entrada)
+            val pose = Tasks.await(tarefa, TIMEOUT_MS, TimeUnit.MILLISECONDS)
+            val resultado = CalculadoraPose.calcular(mapear(pose))
+            ultimaMetrica = resultado
+            return resultado
+        } catch (_: Exception) {
+            return ultimaMetrica
+        } finally {
+            processando.set(false)
+        }
     }
 
     private fun mapear(pose: Pose): Map<TipoPonto, PontoCorpo> {
@@ -58,5 +75,9 @@ class ProcessadorPose : AutoCloseable {
 
     override fun close() {
         detector.close()
+    }
+
+    private companion object {
+        const val TIMEOUT_MS = 150L
     }
 }

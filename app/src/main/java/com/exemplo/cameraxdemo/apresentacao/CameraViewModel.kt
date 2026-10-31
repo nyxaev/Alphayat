@@ -82,7 +82,7 @@ class CameraViewModel(aplicacao: Application) : AndroidViewModel(aplicacao) {
                 val metricasPose = if (precisaPose) _estado.value.metricasPose else null
                 val metricasVoz = if (precisaVoz) capturadorVoz.capturar() else null
 
-                _analise.value = EstadoAnalise.Carregando("Enviando solicitação para o servidor...")
+                _analise.value = EstadoAnalise.Carregando("Processando análise no servidor...")
 
                 val pedido = PedidoAnalise(
                     modo = modo.valor,
@@ -110,18 +110,19 @@ class CameraViewModel(aplicacao: Application) : AndroidViewModel(aplicacao) {
                     is ResultadoAnalise.Sucesso -> EstadoAnalise.Sucesso(
                         pose = resultado.pose,
                         roupa = resultado.roupa,
-                        voz = resultado.voz
+                        voz = resultado.voz,
+                        modoDemonstracao = resultado.modoDemonstracao
                     )
                     ResultadoAnalise.Recusado -> EstadoAnalise.Recusado
                 }
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: ConnectException) {
+            } catch (_: ConnectException) {
                 _analise.value = EstadoAnalise.Erro("Servidor indisponível (${BuildConfig.URL_API}). Verifique se o backend Node.js está rodando.")
-            } catch (e: UnknownHostException) {
+            } catch (_: UnknownHostException) {
                 _analise.value = EstadoAnalise.Erro("Endereço do servidor não encontrado. Verifique as configurações de rede.")
-            } catch (e: SocketTimeoutException) {
-                _analise.value = EstadoAnalise.Erro("Tempo limite excedido ao aguardar a resposta da IA. Tente novamente.")
+            } catch (_: SocketTimeoutException) {
+                _analise.value = EstadoAnalise.Erro("Tempo limite excedido ao aguardar a resposta. Tente novamente.")
             } catch (e: IOException) {
                 _analise.value = EstadoAnalise.Erro("Falha na comunicação: ${e.localizedMessage}")
             } catch (e: Exception) {
